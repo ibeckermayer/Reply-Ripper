@@ -3,10 +3,9 @@ import logging
 
 from requests import HTTPError
 from requests.packages.urllib3.exceptions import ReadTimeoutError
-from requests.exceptions import ChunkedEncodingError, ReadTimeout, \
-                                ContentDecodingError
+from requests.exceptions import ChunkedEncodingError, ReadTimeout, ContentDecodingError
 
-log = logging.getLogger('twarc')
+log = logging.getLogger("twarc")
 
 
 def rate_limit(f):
@@ -15,6 +14,7 @@ def rate_limit(f):
     a rate limit error is encountered we will sleep until we can
     issue the API call again.
     """
+
     def new_f(*args, **kwargs):
         errors = 0
         while True:
@@ -30,14 +30,16 @@ def rate_limit(f):
                 try:
                     resp.raise_for_status()
                 except HTTPError as e:
-                    message = "\nThis is a protected or locked account, or" +\
-                              " the credentials provided are no longer valid."
+                    message = (
+                        "\nThis is a protected or locked account, or"
+                        + " the credentials provided are no longer valid."
+                    )
                     e.args = (e.args[0] + message,) + e.args[1:]
                     log.warning("401 Authentication required for %s", resp.url)
                     raise
             elif resp.status_code == 429:
                 try:
-                    reset = int(resp.headers['x-rate-limit-reset'])
+                    reset = int(resp.headers["x-rate-limit-reset"])
                     now = time.time()
                     seconds = reset - now + 10
                 except KeyError:
@@ -53,11 +55,13 @@ def rate_limit(f):
                     log.warning("too many errors from Twitter, giving up")
                     resp.raise_for_status()
                 seconds = 60 * errors
-                log.warning("%s from Twitter API, sleeping %s",
-                             resp.status_code, seconds)
+                log.warning(
+                    "%s from Twitter API, sleeping %s", resp.status_code, seconds
+                )
                 time.sleep(seconds)
             else:
                 resp.raise_for_status()
+
     return new_f
 
 
@@ -69,6 +73,7 @@ def catch_conn_reset(f):
     """
     try:
         import OpenSSL
+
         ConnectionError = OpenSSL.SSL.SysCallError
     except:
         ConnectionError = None
@@ -84,6 +89,7 @@ def catch_conn_reset(f):
                 return f(self, *args, **kwargs)
         else:
             return f(self, *args, **kwargs)
+
     return new_f
 
 
@@ -91,6 +97,7 @@ def catch_timeout(f):
     """
     A decorator to handle read timeouts from Twitter.
     """
+
     def new_f(self, *args, **kwargs):
         try:
             return f(self, *args, **kwargs)
@@ -98,6 +105,7 @@ def catch_timeout(f):
             log.warning("caught read timeout: %s", e)
             self.connect()
             return f(self, *args, **kwargs)
+
     return new_f
 
 
@@ -106,6 +114,7 @@ def catch_gzip_errors(f):
     A decorator to handle gzip encoding errors which have been known to
     happen during hydration.
     """
+
     def new_f(self, *args, **kwargs):
         try:
             return f(self, *args, **kwargs)
@@ -113,6 +122,7 @@ def catch_gzip_errors(f):
             log.warning("caught gzip error: %s", e)
             self.connect()
             return f(self, *args, **kwargs)
+
     return new_f
 
 
@@ -130,17 +140,19 @@ def interruptible_sleep(t, event=None):
     else:
         return not event.wait(t)
 
+
 def filter_protected(f):
     """
     filter_protected will filter out protected tweets and users unless
     explicitly requested not to.
     """
+
     def new_f(self, *args, **kwargs):
         for obj in f(self, *args, **kwargs):
             if self.protected == False:
-                if 'user' in obj and obj['user']['protected']:
+                if "user" in obj and obj["user"]["protected"]:
                     continue
-                elif 'protected' in obj and obj['protected']:
+                elif "protected" in obj and obj["protected"]:
                     continue
             yield obj
 

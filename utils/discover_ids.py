@@ -25,8 +25,7 @@ import requests
 
 def main():
     parser = argparse.ArgumentParser("discover_ids")
-    parser.add_argument("query", action="store",
-                        help="tweets to search for")
+    parser.add_argument("query", action="store", help="tweets to search for")
     args = parser.parse_args()
 
     logging.basicConfig(filename="discover.log", level=logging.INFO)
@@ -36,14 +35,14 @@ def main():
 
 def discover_ids(query):
     cursor = None
-    url = 'https://twitter.com/i/search/timeline?'
+    url = "https://twitter.com/i/search/timeline?"
     q = {
         "q": query,
-        'f': 'realtime',
+        "f": "realtime",
         "src": "typd",
         "include_available_features": 1,
         "include_entities": 1,
-        "oldest_unread_id": 0
+        "oldest_unread_id": 0,
     }
 
     while True:
@@ -52,12 +51,17 @@ def discover_ids(query):
         if cursor:
             q["scroll_cursor"] = cursor
 
-
-        r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36"}, params=q)
+        r = requests.get(
+            url,
+            headers={
+                "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36"
+            },
+            params=q,
+        )
         s = json.loads(r.content)
 
         html = s["items_html"]
-        tweet_ids = re.findall(r'<a href=\"/.+/status/(\d+)', html)
+        tweet_ids = re.findall(r"<a href=\"/.+/status/(\d+)", html)
         logging.info("discovered tweet ids: %s", tweet_ids)
 
         if len(tweet_ids) == 0:
@@ -72,7 +76,7 @@ def discover_ids(query):
         logging.debug("sleeping for %s" % seconds)
         time.sleep(seconds)
 
-        cursor = s['scroll_cursor']
+        cursor = s["scroll_cursor"]
 
 
 if __name__ == "__main__":
