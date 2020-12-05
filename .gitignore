@@ -1,5 +1,5 @@
 venv/
 output/
 **.env**
-.vscode
+.vscode/launch.json
 **__pycache__**
