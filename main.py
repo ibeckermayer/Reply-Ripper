@@ -4,7 +4,7 @@ from datetime import datetime as dt
 from operator import itemgetter
 
 
-VERBOSE = False
+VERBOSE = True
 
 if not os.path.exists("output"):
     os.mkdir("output")
