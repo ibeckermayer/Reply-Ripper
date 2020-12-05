@@ -46,7 +46,7 @@ t = Twarc(
 
 tweet = t.tweet(tweet_id)
 if not tweet:
-    raise RuntimeError(f"tweet with id {tweet_id} does not exist" % query)
+    raise RuntimeError(f"tweet with id {tweet_id} does not exist")
 # replies is a generator object
 replies = t.replies(tweet, True)
 
